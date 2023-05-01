@@ -48,13 +48,14 @@ class DQNAgent:
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
         self.memory = deque(maxlen=10000)
         self.loss_fn = nn.MSELoss()
+        self.action_space = env.action_space.n
 
-    def act(self, stacked_frames):
-        if np.random.rand() < self.epsilon:
-            return np.random.randint(self.action_dim)
-        stacked_frames = torch.FloatTensor(stacked_frames)
-        q_values = self.model(stacked_frames)
-        return torch.argmax(q_values).item()
+    def act(self, state):
+        state = torch.tensor(state, dtype=torch.float32).unsqueeze(0)  # 转换为张量
+        if np.random.rand() <= self.epsilon:
+            return torch.tensor([random.randrange(self.action_space)], dtype=torch.long)
+        act_values = self.model(state)
+        return torch.argmax(act_values[0]).unsqueeze(0)  # returns action
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
@@ -114,7 +115,8 @@ for episode in range(episodes):
     done = False
     while not done:
         action = agent.act(state)
-        next_state, reward, done, _ = env.step(action)
+        next_state, reward, done, _ = env.step(action.item())
+
         env.render()
         next_state = preprocess(next_state)
 
