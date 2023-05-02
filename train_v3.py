@@ -10,6 +10,7 @@ import torch.optim as optim
 import numpy as np
 from collections import deque
 import random
+import time
 import cv2
 import gym
 import gym_super_mario_bros
@@ -49,6 +50,13 @@ class DQNAgent:
         self.memory = deque(maxlen=10000)
         self.loss_fn = nn.MSELoss()
         self.action_space = env.action_space.n
+
+        # 判断角色是否卡住不能前进
+        self.same_position_counter = 0
+        self.same_position_threshold = 5  # Set threshold
+        self.last_mario_x = 0
+        # self.target_model = self._build_model()
+        # self.update_target_model()
 
     def act(self, state):
         state = torch.tensor(state, dtype=torch.float32).unsqueeze(0)  # 转换为张量
@@ -112,12 +120,27 @@ for episode in range(episodes):
     stacked_frames.append(state)
     state = np.concatenate(stacked_frames, axis=2)
     state = np.reshape(state, [1, state_dim])
+    mario_x = 0
+    agent.last_mario_x = mario_x
+    start_time = time.time()
     done = False
+
     while not done:
         action = agent.act(state)
-        next_state, reward, done, _ = env.step(action.item())
+        next_state, reward, done, info = env.step(action.item())
+        # next_state, reward, done, info = env.step(action)
+        # reward = reward if not done else -10
 
         env.render()
+        mario_x = info['x_pos']
+        print(mario_x)
+        if mario_x <= agent.last_mario_x:
+            if time.time() - start_time > agent.same_position_threshold:
+                done = True
+        else:
+            agent.last_mario_x = mario_x
+            start_time = time.time()
+
         next_state = preprocess(next_state)
 
         stacked_frames.append(next_state)
@@ -127,5 +150,6 @@ for episode in range(episodes):
         state = next_state
     agent.replay(batch_size)
     agent.update_epsilon(epsilon_decay)
+
     if episode % 10 == 0:
         print(f"Episode {episode}/{episodes} finished.")
