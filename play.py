@@ -2,9 +2,8 @@ import numpy as np
 import gym_super_mario_bros
 from nes_py.wrappers import JoypadSpace
 from gym_super_mario_bros.actions import SIMPLE_MOVEMENT
-from dqn_agent import DQNAgent
+from agent import DQNAgent
 
-# 设置环境
 env = gym_super_mario_bros.make('SuperMarioBros-1-1-v0')
 env = JoypadSpace(env, SIMPLE_MOVEMENT)
 
