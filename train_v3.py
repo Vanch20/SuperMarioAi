@@ -55,6 +55,7 @@ class DQNAgent:
         self.same_position_counter = 0
         self.same_position_threshold = 5  # Set threshold
         self.last_mario_x = 0
+        self.max_mario_x = 0
         # self.target_model = self._build_model()
         # self.update_target_model()
 
@@ -131,16 +132,23 @@ for episode in range(episodes):
         # next_state, reward, done, info = env.step(action)
         # reward = reward if not done else -10
 
-        env.render()
         mario_x = info['x_pos']
-        print(mario_x)
-        if mario_x <= agent.last_mario_x:
+
+        # 如果马里奥向前移动，奖励增加, 重置计时器
+        if mario_x > agent.max_mario_x:
+            reward += 1.0
+            start_time = time.time()
+        # 如果马里奥停滞不前，奖励减少
+        else:
+            reward -= 1.0
             if time.time() - start_time > agent.same_position_threshold:
                 done = True
-        else:
-            agent.last_mario_x = mario_x
-            start_time = time.time()
 
+        agent.last_mario_x = mario_x
+        if mario_x > agent.max_mario_x:
+            agent.max_mario_x = mario_x
+
+        env.render()
         next_state = preprocess(next_state)
 
         stacked_frames.append(next_state)
