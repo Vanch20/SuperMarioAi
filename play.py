@@ -10,10 +10,9 @@ env = JoypadSpace(env, SIMPLE_MOVEMENT)
 state_dim = env.observation_space.shape
 action_dim = env.action_space.n
 
-# 实例化代理
+
 agent = DQNAgent(state_dim, action_dim)
 
-# 加载模型
 agent.load("./save/mario-dqn.h5")
 
 

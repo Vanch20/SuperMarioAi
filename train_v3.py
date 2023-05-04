@@ -20,7 +20,7 @@ def preprocess(image):
     return image.reshape(84, 84, 1)
 
 
-env = gym_super_mario_bros.make('SuperMarioBros-v0')
+env = gym_super_mario_bros.make("SuperMarioBros-v0")
 env = JoypadSpace(env, SIMPLE_MOVEMENT)
 
 state = env.reset()
@@ -42,8 +42,7 @@ total_rewards = []
 max_x_positions = []
 
 
-stacked_frames = deque([np.zeros((84, 84, 1), dtype=int)
-                       for _ in range(4)], maxlen=4)
+stacked_frames = deque([np.zeros((84, 84, 1), dtype=int) for _ in range(4)], maxlen=4)
 
 
 for episode in range(episodes):
@@ -67,7 +66,7 @@ for episode in range(episodes):
         # next_state, reward, done, info = env.step(action)
         # reward = reward if not done else -10
 
-        mario_x = info['x_pos']
+        mario_x = info["x_pos"]
 
         # 如果马里奥向前移动，奖励增加, 重置计时器
         if mario_x > max_mario_x:
@@ -82,7 +81,7 @@ for episode in range(episodes):
         last_mario_x = mario_x
         max_mario_x = max(max_mario_x, mario_x)
 
-        # env.render()
+        env.render()
         next_state = preprocess(next_state)
 
         stacked_frames.append(next_state)
@@ -95,8 +94,9 @@ for episode in range(episodes):
     total_rewards.append(total_reward)
     max_x_positions.append(max_mario_x)
 
-    print(f"Episode {episode}/{episodes} finished after {time.time() - start_time} with reward {total_reward} and max x position {max_mario_x}")
+    print(
+        f"Episode {episode}/{episodes} finished after {time.time() - start_time} with reward {total_reward} and max x position {max_mario_x}"
+    )
 
     if episode % 10 == 0:
         agent.save("./save")
-        # print(f"Episode {episode}/{episodes} finished.")
